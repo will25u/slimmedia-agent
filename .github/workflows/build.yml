@@ -1,0 +1,91 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Release Multi-Platform Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Determine Version and Public Key
+        id: vars
+        run: |
+          if [ -n "${GITHUB_REF_NAME}" ] && [[ "${GITHUB_REF_NAME}" == v* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          elif [ -f VERSION ]; then
+            VERSION=$(cat VERSION)
+          else
+            VERSION="0.0.0-dev"
+          fi
+
+          if [ -f release-public.key ]; then
+            PUBKEY=$(cat release-public.key)
+          else
+            PUBKEY="0000000000000000000000000000000000000000000000000000000000000000"
+          fi
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "pubkey=${PUBKEY}" >> $GITHUB_OUTPUT
+
+      - name: Build Windows Tray Application
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+          PUBKEY: ${{ steps.vars.outputs.pubkey }}
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath \
+            -ldflags "-H=windowsgui -s -w -X github.com/will25u/slimmedia-agent/internal/daemon.Version=${VERSION} -X github.com/will25u/slimmedia-agent/internal/updater.ReleasePublicKeyHex=${PUBKEY}" \
+            -o dist/slimmedia-agent-windows-amd64.exe ./cmd/tray
+
+          cd dist
+          sha256sum slimmedia-agent-windows-amd64.exe > slimmedia-agent-windows-amd64.exe.sha256
+          cd ..
+
+      - name: Upload Unsigned Windows Artifact for SignPath
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-agent-windows
+          path: dist/slimmedia-agent-windows-amd64.exe
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Build Linux Headless CLI Binary
+        env:
+          VERSION: ${{ steps.vars.outputs.version }}
+          PUBKEY: ${{ steps.vars.outputs.pubkey }}
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
+            -ldflags "-s -w -X github.com/will25u/slimmedia-agent/internal/daemon.Version=${VERSION} -X github.com/will25u/slimmedia-agent/internal/updater.ReleasePublicKeyHex=${PUBKEY}" \
+            -o dist/slimmedia-agent-linux-amd64 ./cmd/agent
+
+          cd dist
+          sha256sum slimmedia-agent-linux-amd64 > slimmedia-agent-linux-amd64.sha256
+          cd ..
+
+      - name: Publish Linux CLI Release Asset
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/slimmedia-agent-linux-amd64
+            dist/slimmedia-agent-linux-amd64.sha256
+          draft: false
+          prerelease: false
+          generate_release_notes: true
