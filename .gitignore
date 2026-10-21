@@ -1,0 +1,28 @@
+# Binaries and build artifacts
+bin/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+
+# Go workspace and cache
+.gocache/
+vendor/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local logs and temporary databases
+*.log
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
