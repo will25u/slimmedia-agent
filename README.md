@@ -69,6 +69,12 @@ Binaries are compiled via GitHub Actions on hosted runners. Windows binaries are
 
 ---
 
+## Privacy
+
+Media files remain 100% local. SlimMedia Agent processes and transcodes media directly on your local system; no private media content, video frames, or audio streams are ever collected, transmitted, or uploaded to external servers. Only operational metadata (e.g. transcode progress, codec details, and machine capabilities) is exchanged with your paired SlimMedia server.
+
+---
+
 ## Open Source License & Compliance
 
 SlimMedia Agent is released under the **MIT License**. See [LICENSE](LICENSE) for the full license text.
