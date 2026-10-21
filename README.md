@@ -65,7 +65,7 @@ On first run, provide your SlimMedia server pairing code or launch the tray appl
 
 ## CI/CD & Code Signing
 
-Binaries are compiled via GitHub Actions on hosted runners. Windows releases are signed using Authenticode certificates provided by the **[SignPath Foundation](https://signpath.org)**.
+Binaries are compiled via GitHub Actions on hosted runners. Windows binaries are code-signed by the SignPath Foundation. Windows releases are signed using Authenticode certificates provided by the **[SignPath Foundation](https://signpath.org)**.
 
 ---
 
