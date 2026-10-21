@@ -15,7 +15,7 @@ import (
 // an embedded sentinel refuses every update (see VerifySignature).
 //
 // Inject with:
-//   -ldflags "-X github.com/will25u/slimmedia/agent/internal/updater.ReleasePublicKeyHex=<64-char hex>"
+//   -ldflags "-X github.com/will25u/slimmedia-agent/internal/updater.ReleasePublicKeyHex=<64-char hex>"
 var ReleasePublicKeyHex = "0000000000000000000000000000000000000000000000000000000000000000"
 
 // releasePublicKey returns the decoded Ed25519 public key from ReleasePublicKeyHex.
